@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Formatter & Beautifier</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>💾 SQL Formatter & Beautifier</h1>
+                <p class="subtitle">Format & Beautify SQL with Syntax Highlighting</p>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <label for="sqlInput">Paste your SQL query here:</label>
+            <textarea id="sqlInput" placeholder="SELECT * FROM users WHERE active = TRUE;"></textarea>
+        </div>
+
+        <!-- Options Section -->
+        <div class="options-section">
+            <h3>Formatting Options:</h3>
+
+            <div class="options-grid">
+                <div class="option-group">
+                    <label>Indentation:</label>
+                    <select id="indentType">
+                        <option value="spaces4">4 Spaces</option>
+                        <option value="spaces2">2 Spaces</option>
+                        <option value="tabs">Tabs</option>
+                    </select>
+                </div>
+
+                <div class="option-group">
+                    <label>Keywords:</label>
+                    <select id="keywordCase">
+                        <option value="upper">UPPERCASE</option>
+                        <option value="lower">lowercase</option>
+                        <option value="proper">ProperCase</option>
+                    </select>
+                </div>
+
+                <div class="option-group">
+                    <label>Comma Position:</label>
+                    <select id="commaPosition">
+                        <option value="after">After (col1, col2)</option>
+                        <option value="before">Before (col1 ,col2)</option>
+                        <option value="spaced">Spaced Before ( ,col)</option>
+                    </select>
+                </div>
+
+                <div class="option-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="expandCommaLists" checked>
+                        Expand Comma Lists (each column on new line)
+                    </label>
+                </div>
+
+                <div class="option-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="expandBooleanExpr" checked>
+                        Expand Boolean Expressions (AND/OR on new line)
+                    </label>
+                </div>
+
+                <div class="option-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="expandCaseStatements" checked>
+                        Expand CASE Statements
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="button-group main-actions">
+            <button id="formatBtn" class="btn btn-primary">
+                <span class="icon">✨</span>
+                Format SQL
+            </button>
+            <button id="minifyBtn" class="btn btn-secondary">
+                <span class="icon">🗜️</span>
+                Minify SQL
+            </button>
+            <button id="clearBtn" class="btn btn-outline">Clear All</button>
+        </div>
+
+        <!-- Output Section -->
+        <div class="output-section" id="outputSection" style="display: none;">
+            <!-- Syntax Highlighted Preview -->
+            <div class="preview-container">
+                <label>
+                    Formatted SQL (with syntax highlighting):
+                </label>
+                <div id="syntaxPreview" class="syntax-preview"></div>
+            </div>
+
+            <!-- Plain Text Output (collapsible) -->
+            <details style="margin: 10px 0;">
+                <summary style="cursor: pointer; color: #666; font-size: 12px;">
+                    📝 View Plain Text <span class="char-count" id="charCount"></span>
+                </summary>
+                <textarea id="sqlOutput" readonly style="margin-top: 10px;"></textarea>
+            </details>
+
+            <!-- Copy Buttons -->
+            <div class="button-group">
+                <button id="copyPlainBtn" class="btn btn-success">
+                    <span class="icon">📋</span>
+                    Copy Plain Text
+                </button>
+                <button id="copyHtmlBtn" class="btn btn-success">
+                    <span class="icon">🎨</span>
+                    Copy as HTML (with colors)
+                </button>
+            </div>
+            <p style="font-size: 11px; color: #666; margin-top: 5px; text-align: center;">
+                HTML copy includes syntax highlighting for Word/Outlook
+            </p>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="status-message"></div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <span>created by <strong>jibaroenlaluna</strong></span>
+            <a href="#" id="aboutLink">About</a>
+        </div>
+    </div>
+
+    <script src="sql-formatter.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

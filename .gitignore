@@ -1,0 +1,28 @@
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary Files
+*.tmp
+*.bak
+*.log
+
+# Chrome Extension Package
+*.crx
+*.pem
+*.zip
+
+# Node modules (if you add build tools later)
+node_modules/
+package-lock.json
+
+# Test files (optional - uncomment if you don't want to commit test files)
+# test-*.html

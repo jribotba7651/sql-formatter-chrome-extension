@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Formatter & Beautifier - Test</title>
+    <link rel="stylesheet" href="popup.css">
+    <style>
+        body {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>💾 SQL Formatter & Beautifier - Test Page</h1>
+                <p class="subtitle">Test the formatter before installing the extension</p>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <label for="sqlInput">Paste your SQL query here:</label>
+            <textarea id="sqlInput" placeholder="SELECT * FROM users WHERE active = TRUE;">SELECT
+    i.item_number AS "Item Number",
+    i.item_descrip1 AS "Description",
+    i.item_active AS "Active",
+    c.classcode_code AS "Class Code",
+    CASE
+        -- Finished Goods
+        WHEN c.classcode_code LIKE 'FG - KIT%' THEN 'FERT'
+        WHEN c.classcode_code LIKE 'FG%' THEN 'FERT'
+
+        -- Semi-finished / WIP
+        WHEN c.classcode_code LIKE 'COM - BULK%' THEN 'HALB'
+        WHEN c.classcode_code LIKE 'RW%' THEN 'HALB'
+        WHEN c.classcode_code LIKE 'WIP%' THEN 'HALB'
+
+        -- Raw materials
+        WHEN c.classcode_code LIKE 'RM%' THEN 'ROH'
+
+        -- Packaging (generic COM but not BULK)
+        WHEN c.classcode_code LIKE 'COM%' THEN 'VERP'
+
+        -- Non-valuated items
+        WHEN c.classcode_code LIKE 'MM%' THEN 'NLAG'
+        WHEN c.classcode_code LIKE 'SAMPLE%' THEN 'NLAG'
+        WHEN c.classcode_code LIKE 'DEMO%' THEN 'NLAG'
+        WHEN c.classcode_code LIKE 'SUP%' THEN 'NLAG'
+        WHEN c.classcode_code LIKE 'TAX%' THEN 'NLAG'
+
+        -- Services
+        WHEN c.classcode_code LIKE 'SRV%' THEN 'DIEN'
+
+        -- Packaging, explicitly
+        WHEN c.classcode_code LIKE 'PKG%' THEN 'VERP'
+
+        ELSE 'CHECK'
+    END AS "SAP Material Type"
+FROM
+    public.item i
+LEFT JOIN
+    public.classcode c
+    ON i.item_classcode_id = c.classcode_id
+WHERE
+    i.item_active = TRUE
+ORDER BY
+    i.item_number;</textarea>
+        </div>
+
+        <!-- Options Section -->
+        <div class="options-section">
+            <h3>Formatting Options:</h3>
+
+            <div class="options-grid">
+                <div class="option-group">
+                    <label>Indentation:</label>
+                    <select id="indentType">
+                        <option value="spaces4">4 Spaces</option>
+                        <option value="spaces2">2 Spaces</option>
+                        <option value="tabs">Tabs</option>
+                    </select>
+                </div>
+
+                <div class="option-group">
+                    <label>Keywords:</label>
+                    <select id="keywordCase">
+                        <option value="upper">UPPERCASE</option>
+                        <option value="lower">lowercase</option>
+                        <option value="proper">ProperCase</option>
+                    </select>
+                </div>
+
+                <div class="option-group">
+                    <label>Comma Position:</label>
+                    <select id="commaPosition">
+                        <option value="after">After (col1, col2)</option>
+                        <option value="before">Before (col1 ,col2)</option>
+                        <option value="spaced">Spaced Before ( ,col)</option>
+                    </select>
+                </div>
+
+                <div class="option-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="expandCommaLists" checked>
+                        Expand Comma Lists (each column on new line)
+                    </label>
+                </div>
+
+                <div class="option-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="expandBooleanExpr" checked>
+                        Expand Boolean Expressions (AND/OR on new line)
+                    </label>
+                </div>
+
+                <div class="option-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="expandCaseStatements" checked>
+                        Expand CASE Statements
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="button-group main-actions">
+            <button id="formatBtn" class="btn btn-primary">
+                <span class="icon">✨</span>
+                Format SQL
+            </button>
+            <button id="minifyBtn" class="btn btn-secondary">
+                <span class="icon">🗜️</span>
+                Minify SQL
+            </button>
+            <button id="clearBtn" class="btn btn-outline">Clear All</button>
+        </div>
+
+        <!-- Output Section -->
+        <div class="output-section" id="outputSection" style="display: none;">
+            <!-- Syntax Highlighted Preview -->
+            <div class="preview-container">
+                <label>
+                    Formatted SQL (with syntax highlighting):
+                </label>
+                <div id="syntaxPreview" class="syntax-preview"></div>
+            </div>
+
+            <!-- Plain Text Output (collapsible) -->
+            <details open style="margin: 10px 0;">
+                <summary style="cursor: pointer; color: #666; font-size: 12px;">
+                    📝 View Plain Text <span class="char-count" id="charCount"></span>
+                </summary>
+                <textarea id="sqlOutput" readonly style="margin-top: 10px;"></textarea>
+            </details>
+
+            <!-- Copy Buttons -->
+            <div class="button-group">
+                <button id="copyPlainBtn" class="btn btn-success">
+                    <span class="icon">📋</span>
+                    Copy Plain Text
+                </button>
+                <button id="copyHtmlBtn" class="btn btn-success">
+                    <span class="icon">🎨</span>
+                    Copy as HTML (with colors)
+                </button>
+            </div>
+            <p style="font-size: 11px; color: #666; margin-top: 5px; text-align: center;">
+                HTML copy includes syntax highlighting for Word/Outlook
+            </p>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="status-message"></div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <span>created by <strong>jibaroenlaluna</strong> 🌙 <a href="https://www.jibaroenlaluna.com" target="_blank" style="color: #667eea;">www.jibaroenlaluna.com</a></span>
+            <span>Test before installing</span>
+        </div>
+    </div>
+
+    <script src="sql-formatter.js"></script>
+    <script>
+        // Modified popup.js for testing (without Chrome extension APIs)
+        const sqlInput = document.getElementById('sqlInput');
+        const sqlOutput = document.getElementById('sqlOutput');
+        const syntaxPreview = document.getElementById('syntaxPreview');
+        const outputSection = document.getElementById('outputSection');
+        const statusMessage = document.getElementById('statusMessage');
+        const charCount = document.getElementById('charCount');
+
+        const indentType = document.getElementById('indentType');
+        const keywordCase = document.getElementById('keywordCase');
+        const commaPosition = document.getElementById('commaPosition');
+        const expandCommaLists = document.getElementById('expandCommaLists');
+        const expandBooleanExpr = document.getElementById('expandBooleanExpr');
+        const expandCaseStatements = document.getElementById('expandCaseStatements');
+
+        const formatBtn = document.getElementById('formatBtn');
+        const minifyBtn = document.getElementById('minifyBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyPlainBtn = document.getElementById('copyPlainBtn');
+        const copyHtmlBtn = document.getElementById('copyHtmlBtn');
+
+        const formatter = new SQLFormatter();
+
+        function updateFormatterOptions() {
+            formatter.setOptions({
+                indentType: indentType.value,
+                keywordCase: keywordCase.value,
+                commaPosition: commaPosition.value,
+                expandCommaLists: expandCommaLists.checked,
+                expandBooleanExpr: expandBooleanExpr.checked,
+                expandCaseStatements: expandCaseStatements.checked
+            });
+        }
+
+        function showStatus(message, type = 'success', duration = 3000) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type} show`;
+            setTimeout(() => {
+                statusMessage.classList.remove('show');
+            }, duration);
+        }
+
+        function updateCharCount() {
+            const count = sqlOutput.value.length;
+            charCount.textContent = `${count} characters`;
+        }
+
+        formatBtn.addEventListener('click', () => {
+            const sql = sqlInput.value.trim();
+            if (!sql) {
+                showStatus('Please enter some SQL to format', 'info');
+                return;
+            }
+
+            try {
+                updateFormatterOptions();
+                const result = formatter.formatAndHighlight(sql);
+                sqlOutput.value = result.formatted;
+                syntaxPreview.innerHTML = result.highlighted;
+                outputSection.style.display = 'block';
+                updateCharCount();
+                showStatus('✨ SQL formatted successfully!', 'success');
+            } catch (error) {
+                showStatus('❌ Error formatting SQL: ' + error.message, 'error');
+                console.error(error);
+            }
+        });
+
+        minifyBtn.addEventListener('click', () => {
+            const sql = sqlInput.value.trim();
+            if (!sql) {
+                showStatus('Please enter some SQL to minify', 'info');
+                return;
+            }
+
+            try {
+                updateFormatterOptions();
+                const minified = formatter.minify(sql);
+                const highlighted = formatter.highlightSyntax(minified, false);
+                sqlOutput.value = minified;
+                syntaxPreview.innerHTML = highlighted;
+                outputSection.style.display = 'block';
+                updateCharCount();
+                showStatus('🗜️ SQL minified successfully!', 'success');
+            } catch (error) {
+                showStatus('❌ Error minifying SQL: ' + error.message, 'error');
+                console.error(error);
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            sqlInput.value = '';
+            sqlOutput.value = '';
+            syntaxPreview.innerHTML = '';
+            outputSection.style.display = 'none';
+            showStatus('Cleared', 'info', 1500);
+        });
+
+        copyPlainBtn.addEventListener('click', async () => {
+            if (!sqlOutput.value) {
+                showStatus('No SQL to copy', 'info');
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(sqlOutput.value);
+                showStatus('📋 Copied plain text to clipboard!', 'success');
+            } catch (error) {
+                showStatus('❌ Failed to copy to clipboard', 'error');
+                console.error(error);
+            }
+        });
+
+        copyHtmlBtn.addEventListener('click', async () => {
+            if (!sqlOutput.value) {
+                showStatus('No SQL to copy', 'info');
+                return;
+            }
+
+            try {
+                updateFormatterOptions();
+                const styledHtml = formatter.generateStyledHtml(sqlOutput.value);
+                const htmlBlob = new Blob([styledHtml], { type: 'text/html' });
+                const textBlob = new Blob([sqlOutput.value], { type: 'text/plain' });
+
+                const clipboardItem = new ClipboardItem({
+                    'text/html': htmlBlob,
+                    'text/plain': textBlob
+                });
+
+                await navigator.clipboard.write([clipboardItem]);
+                showStatus('🎨 Copied HTML with syntax highlighting! Paste into Word/Outlook.', 'success', 4000);
+            } catch (error) {
+                console.error('Clipboard error:', error);
+                try {
+                    await navigator.clipboard.writeText(sqlOutput.value);
+                    showStatus('⚠️ Copied as plain text (HTML copy failed)', 'info', 3000);
+                } catch (fallbackError) {
+                    showStatus('❌ Could not copy to clipboard', 'error');
+                }
+            }
+        });
+
+        // Auto-format on page load
+        window.addEventListener('load', () => {
+            formatBtn.click();
+        });
+    </script>
+</body>
+</html>
